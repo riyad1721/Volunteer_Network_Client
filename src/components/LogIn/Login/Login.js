@@ -1,45 +1,77 @@
-import React from 'react';
-import { Button, Form } from 'react-bootstrap';
+import { Container, Typography, TextField, Button, CircularProgress, Alert } from '@mui/material';
+import { Grid } from '@mui/material';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import useAuth from '../../../hooks/useAuth';
 import LoginBanner from '../LoginBanner/LoginBanner';
 
+import { useNavigate, useLocation } from "react-router-dom";
+
 const Login = () => {
+    const [loginData, setLoginData] = useState({});
+    const { user, loginUser, signInWithGoogle, isLoading, authError } = useAuth();
+
+    const location = useLocation();
+    const history = useNavigate();
+
+
+    const handleOnChange = e => {
+        const field = e.target.name;
+        const value = e.target.value;
+        const newLoginData = { ...loginData };
+        newLoginData[field] = value;
+        console.log(newLoginData);
+        setLoginData(newLoginData);
+    }
+    const handleLoginSubmit = e => {
+        loginUser(loginData.email, loginData.password, location, history);
+        e.preventDefault();
+    }
+    const handleGoogleSignIn = () => {
+        signInWithGoogle(location, history);
+    }
     return (
-        <div>
+        <>
             <LoginBanner />
+            <Container style={{ marginInlineStart: '35%' }}>
 
-            <Form style={{ width: '40%', margin: 'auto', marginTop: '40px', border: '3px solid gray', padding: '30px' }}>
-                <h2 >Please logIn</h2>
-                <p>-------------------------------------</p>
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    {/* <Form.Label><h2>Email Address</h2></Form.Label> */}
-                    <Form.Control type="email" placeholder="Enter email" />
+                <Grid container spacing={2}>
+                    <Grid item sx={{ mt: 8 }} xs={12} md={6}>
+                        <Typography variant="body1" gutterBottom><h2>Please Login</h2></Typography>
+                        <form onSubmit={handleLoginSubmit}>
+                            <TextField
+                                sx={{ width: '75%', m: 1 }}
+                                id="standard-basic"
+                                label="Your Email"
+                                name="email"
+                                onBlur={handleOnChange}
+                                variant="standard" />
+                            <TextField
+                                sx={{ width: '75%', m: 1 }}
+                                id="standard-basic"
+                                label="Your Password"
+                                type="password"
+                                name="password"
+                                onBlur={handleOnChange}
+                                variant="standard" />
 
-                </Form.Group>
+                            <Button sx={{ width: '75%', m: 1 }} type="submit" variant="contained">Login</Button>
+                            <NavLink
+                                style={{ textDecoration: 'none' }}
+                                to="/register">
+                                <Button variant="text">New User? Please Register</Button>
+                            </NavLink>
+                            {isLoading && <CircularProgress />}
+                            {user?.email && <Alert severity="success">Login successfully!</Alert>}
+                            {authError && <Alert severity="error">{authError}</Alert>}
+                        </form>
+                        <p>---------------------------------------------</p>
+                        <Button variant="contained" onClick={handleGoogleSignIn}>Google Sign In</Button>
+                    </Grid>
 
-                <Form.Group className="mb-3" controlId="formBasicPassword">
-                    {/* <Form.Label><h2>Password</h2></Form.Label> */}
-                    <Form.Control type="password" placeholder="Password" />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="formBasicCheckbox">
-                    <Form.Check type="checkbox" label="Check Out if you are valid user" />
-                </Form.Group>
-                <Button variant="primary" type="submit">
-                    Login
-                </Button>
-                <br /><br />
-                <p>-------------------------------------</p>
-
-                <NavLink
-                    style={{ textDecoration: 'none' }}
-                    to="/register">
-                    <Button variant="text">Already have an account? Please Register</Button>
-                </NavLink>
-            </Form>
-
-
-
-        </div>
+                </Grid>
+            </Container>
+        </>
     );
 };
 
